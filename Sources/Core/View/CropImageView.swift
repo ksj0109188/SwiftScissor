@@ -10,7 +10,8 @@ import SwiftUI
 @available(iOS 17.0, *)
 public struct CropImageView: View {
     @StateObject private var viewModel: CropViewModel = CropViewModel()
-    @Binding public var bindingImage: UIImage
+    @Binding public var croppedImage: UIImage
+    @State private var originImage: UIImage
     @State private var selectedAspectRatio: AspectRatio = .free
     @State private var maxSize: CGSize = .zero
     @State private var offset: CGSize = .zero
@@ -18,8 +19,9 @@ public struct CropImageView: View {
     @State private var rectangleSize: CGSize = CGSize(width: 150, height: 150)
     @State private var rectangleinitialSize: CGSize = CGSize(width: 150, height: 150)
     
-    public init(image: Binding<UIImage>) {
-        self._bindingImage = image
+    public init(originImage: UIImage, croppedImage: Binding<UIImage>) {
+        self.originImage = originImage
+        self._croppedImage = croppedImage
     }
     
     public var body: some View {
@@ -77,10 +79,9 @@ public struct CropImageView: View {
             Spacer()
             NavigationCheckButton(color: .accentColor) {
                 Task {
-                    if let image = await viewModel.captureAndCrop(image: bindingImage, geometry: geometry, offset: offset, rectangleSize: rectangleSize) {
+                    if let image = await viewModel.captureAndCrop(image: originImage, geometry: geometry, offset: offset, rectangleSize: rectangleSize) {
                         DispatchQueue.main.async {
-                            bindingImage = image
-                            
+                            croppedImage = image
                         }
                     }
                 }
@@ -91,7 +92,7 @@ public struct CropImageView: View {
     
     private func cropImageLayer(geometry: GeometryProxy) -> some View {
         Group {
-            Image(uiImage: bindingImage)
+            Image(uiImage: originImage)
                 .resizable()
                 .scaledToFit()
                 .frame(width: geometry.size.width, height: geometry.size.height)
@@ -116,7 +117,7 @@ public struct CropImageView: View {
     }
     
     private func updateMaxSize(geometrySize: CGSize) {
-        let imageSize = bindingImage.size
+        let imageSize = originImage.size
         let scale = min(geometrySize.width / imageSize.width, geometrySize.height / imageSize.height)
         maxSize = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
     }

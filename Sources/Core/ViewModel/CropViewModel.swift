@@ -48,7 +48,7 @@ final class CropViewModel: ObservableObject, ErrorHandling {
         var errorDescription: String? {
             switch self {
                 case .none:
-                    return nil
+                    return NSLocalizedString("Capture success", comment: "")
                 case .captureFailed:
                     return NSLocalizedString("Capture fail", comment: "")
             }
