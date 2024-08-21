@@ -4,7 +4,7 @@
 import PackageDescription
 
 let package = Package(
-    name: "cropImage",
+    name: "SwiftScissor",
     platforms: [
         .iOS(.v17),
     ],

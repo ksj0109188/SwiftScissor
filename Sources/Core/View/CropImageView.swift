@@ -10,8 +10,8 @@ import SwiftUI
 @available(iOS 17.0, *)
 public struct CropImageView: View {
     @Environment(\.dismiss) private var dismiss
-    @State public var image: UIImage
     @StateObject private var viewModel: CropViewModel = CropViewModel()
+    @Binding public var image: UIImage
     @State private var selectedAspectRatio: AspectRatio = .free
     @State private var maxSize: CGSize = .zero
     @State private var offset: CGSize = .zero
