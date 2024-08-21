@@ -9,6 +9,6 @@ import Foundation
 
 @MainActor
 protocol ErrorHandling {
-    var isError: Bool { get set}
+    var isCompleteTask: Bool { get set}
     var errorMessage: LocalizedError { get set }
 }

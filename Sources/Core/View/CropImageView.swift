@@ -9,9 +9,8 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 public struct CropImageView: View {
-    @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel: CropViewModel = CropViewModel()
-    @Binding public var image: UIImage
+    @Binding public var bindingImage: UIImage
     @State private var selectedAspectRatio: AspectRatio = .free
     @State private var maxSize: CGSize = .zero
     @State private var offset: CGSize = .zero
@@ -20,7 +19,7 @@ public struct CropImageView: View {
     @State private var rectangleinitialSize: CGSize = CGSize(width: 150, height: 150)
     
     public init(image: Binding<UIImage>) {
-        self._image = image
+        self._bindingImage = image
     }
     
     public var body: some View {
@@ -30,6 +29,11 @@ public struct CropImageView: View {
                 cropMaskLayer(geometry: geometry)
                 draggableRectangleLayer
                 controlsLayer(geometry: geometry)
+            }
+            .alert("Alert", isPresented: $viewModel.isCompleteTask) {
+                Button("Confirm", action: {})
+            } message: {
+                Text(viewModel.errorMessage.localizedDescription)
             }
             .onAppear { updateMaxSize(geometrySize: geometry.size) }
             .onChange(of: geometry.size) { _, newValue in
@@ -54,7 +58,7 @@ public struct CropImageView: View {
         VStack {
             Spacer()
             aspectRatioControls
-//            cropControls(geometry: geometry)
+            cropControls(geometry: geometry)
         }
     }
     
@@ -65,33 +69,33 @@ public struct CropImageView: View {
         .padding()
     }
     
-//    private func cropControls(geometry: GeometryProxy) -> some View {
-//        HStack {
-//            NavigationBackButton(buttonType: .xmark, color: .accentColor, action: {})
-//            Spacer()
-//            Text("Crop").font(.subTitleFont)
-//            Spacer()
-//            NavigationCheckButton(color: .accentColor) {
-//                dismiss()
-//                Task {
-//                    await viewModel.captureAndCrop(geometry: geometry, offset: offset, rectangleSize: rectangleSize)
-//                }
-//            }
-//        }
-//        .padding(.bottom)
-//    }
+    private func cropControls(geometry: GeometryProxy) -> some View {
+        HStack {
+            NavigationBackButton(buttonType: .xmark, color: .accentColor, action: {})
+            Spacer()
+            Text("Crop").font(.subheadline)
+            Spacer()
+            NavigationCheckButton(color: .accentColor) {
+                Task {
+                    if let image = await viewModel.captureAndCrop(image: bindingImage, geometry: geometry, offset: offset, rectangleSize: rectangleSize) {
+                        DispatchQueue.main.async {
+                            bindingImage = image
+                            
+                        }
+                    }
+                }
+            }
+        }
+        .padding(.bottom)
+    }
     
     private func cropImageLayer(geometry: GeometryProxy) -> some View {
         Group {
-            if let image = viewModel.cropBoardImage {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: geometry.size.width, height: geometry.size.height)
-                    .ignoresSafeArea(.all)
-            } else {
-                ProgressView()
-            }
+            Image(uiImage: bindingImage)
+                .resizable()
+                .scaledToFit()
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .ignoresSafeArea(.all)
         }
     }
     
@@ -112,7 +116,7 @@ public struct CropImageView: View {
     }
     
     private func updateMaxSize(geometrySize: CGSize) {
-        let imageSize = image.size
+        let imageSize = bindingImage.size
         let scale = min(geometrySize.width / imageSize.width, geometrySize.height / imageSize.height)
         maxSize = CGSize(width: imageSize.width * scale, height: imageSize.height * scale)
     }
@@ -148,4 +152,6 @@ public struct CropImageView: View {
         offset = .zero
         initialOffset = .zero
     }
+    
+    
 }

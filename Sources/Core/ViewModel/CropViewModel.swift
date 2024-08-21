@@ -9,32 +9,36 @@ import SwiftUI
 import CoreImage
 import Combine
 
-@MainActor
 final class CropViewModel: ObservableObject, ErrorHandling {
-    @Published var isError: Bool = false
-    @Published var cropBoardImage: UIImage?
+    @Published var isCompleteTask: Bool = false
     @Published var errorMessage: LocalizedError = ErrorMessage.none
     
     let captureManager: Captureable
-
+    
     init(captureManager: Captureable = CaptureManager()) {
         self.captureManager = captureManager
     }
     
-    func captureAndCrop(image: UIImage, geometry: GeometryProxy, offset: CGSize, rectangleSize: CGSize) async {
+    func captureAndCrop(image: UIImage, geometry: GeometryProxy, offset: CGSize, rectangleSize: CGSize) async -> UIImage? {
+        let newImage: UIImage?
+        isCompleteTask = false
+        
         do {
-            let newImage = try await captureManager.captureAndCrop(
+            newImage = try await captureManager.captureAndCrop(
                 image: image,
                 size: geometry.size,
                 offset: offset,
                 rectangleSize: rectangleSize
             )
-            isError = false
             errorMessage = ErrorMessage.none
         } catch {
-            isError = true
+            newImage = nil
             errorMessage = ErrorMessage.captureFailed
         }
+        
+        isCompleteTask = true
+        
+        return newImage
     }
     
     enum ErrorMessage: LocalizedError {
