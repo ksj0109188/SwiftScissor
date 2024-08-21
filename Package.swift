@@ -17,6 +17,6 @@ let package = Package(
     targets: [
         .target(
             name: "SwiftScissor",
-            path: "CoreImage"),
+            path: "Sources/Core"),
     ]
 )
