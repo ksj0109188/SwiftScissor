@@ -16,7 +16,7 @@ struct NavigationCheckButton: View {
             action()
         } label: {
             Image(systemName: "checkmark")
-                .font(.subTitleFont)
+                .font(.subheadline)
                 .foregroundStyle(color ?? .primary)
                 .bold()
         }
