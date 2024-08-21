@@ -7,6 +7,20 @@
 
 import SwiftUI
 
+public enum AspectRatio: String, CaseIterable {
+    case free = "Free"
+    case square = "1:1"
+    case portrait = "1:3"
+    
+    var ratio: CGFloat? {
+        switch self {
+            case .free: return nil
+            case .square: return 1
+            case .portrait: return 1/3
+        }
+    }
+}
+
 struct AspectRatioButtonGroup: View {
     @Binding var selectedRatio: AspectRatio
     var onRatioSelected: () -> Void
@@ -45,12 +59,9 @@ struct AspectRatioButtonGroup: View {
     private func foregroundColorFor(_ ratio: AspectRatio) -> Color {
         selectedRatio == ratio ? .white : .black
     }
-    
 }
-
 
 #Preview {
     AspectRatioButtonGroup(selectedRatio: .constant(.free)) {
-        
     }
 }

@@ -7,6 +7,7 @@
 
 import SwiftUI
 
+@available(iOS 17.0, *)
 public struct CropImageView: View {
     @Environment(\.dismiss) private var dismiss
     @State public var image: UIImage
