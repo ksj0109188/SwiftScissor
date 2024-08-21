@@ -19,6 +19,10 @@ public struct CropImageView: View {
     @State private var rectangleSize: CGSize = CGSize(width: 150, height: 150)
     @State private var rectangleinitialSize: CGSize = CGSize(width: 150, height: 150)
     
+    public init(image: Binding<UIImage>) {
+        self._image = image
+    }
+    
     public var body: some View {
         GeometryReader { geometry in
             ZStack {
