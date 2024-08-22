@@ -7,6 +7,13 @@
 
 import SwiftUI
 
+/// CropImageView is the core view of SwiftScissor.
+/// It provides image cropping functionality in a SwiftUI-compatible format.
+///
+/// - Available as a SwiftUI view
+/// - Allows users to interactively crop images
+/// - Supports custom aspect ratios and free-form cropping
+/// - Returns the cropped image through a completion handler
 @available(iOS 17.0, *)
 public struct CropImageView: View {
     @Environment(\.dismiss) var dismiss
