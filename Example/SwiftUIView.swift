@@ -9,9 +9,10 @@ import SwiftUI
 import SwiftScissor
 
 struct ContentView: View {
-    @State private var image = UIImage(named: "Sky")!
+    @State private var image = UIImage(named: "yourImage")!
     @State private var cropped: UIImage?
     @State private var ispresent = false
+    
     var body: some View {
         VStack {
             Button(action: {

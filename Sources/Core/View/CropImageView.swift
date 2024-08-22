@@ -21,10 +21,17 @@ public struct CropImageView: View {
     
     private let onCrop: (UIImage?) -> Void
     
+    /// - Parameters:
+    ///   - originImage: The UIImage to be used in the crop view for cropping.
+    ///   - onCrop: A closure that will be executed when the cropping is completed (i.e., when the check button is tapped).
+    ///             This closure takes an optional UIImage as its parameter, which will be the cropped image if successful, or nil if cropping fails.
+    ///
+    /// - Note: The `onCrop` closure is called with the cropped image when the user confirms the crop by tapping the check button.
+    ///         If cropping fails for any reason, the closure will be called with `nil`.
     public init(originImage: UIImage, onCrop: @escaping (UIImage?) -> Void) {
-          self.originImage = originImage
-          self.onCrop = onCrop
-      }
+        self.originImage = originImage
+        self.onCrop = onCrop
+    }
     
     public var body: some View {
         GeometryReader { geometry in

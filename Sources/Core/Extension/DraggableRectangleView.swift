@@ -14,7 +14,7 @@ struct DraggableRectangleView: View {
     @Binding var rectangleinitialSize: CGSize
     @Binding var maxSize: CGSize
     @State private var isDragging = false
-
+    
     var body: some View {
         ZStack {
             draggableArea
