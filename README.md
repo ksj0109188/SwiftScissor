@@ -18,9 +18,9 @@ Implement image cropping functionality easily in SwiftUI.
  ``` swift
 URL : https://github.com/ksj0109188/SwiftScissor.git
 ```
-## STEP 1
+### STEP 1
 To install SwiftScsissor using [Swift Package Manager](https://github.com/apple/swift-package-manager)
-## STEP 2
+### STEP 2
 you can follow the [tutorial published by Apple](https://developer.apple.com/documentation/xcode/adding_package_dependencies_to_your_app) using the URL for this repo
 
 
@@ -68,7 +68,7 @@ Here's an example of using CropImageView:
 ```
 
 # Contact
-## Discord: seongjun9068
+### Discord: seongjun9068
 
 # Contribution & Bug Fixes
-## Feel free to create Issues and PRs at any time
+### Feel free to create Issues and PRs at any time
