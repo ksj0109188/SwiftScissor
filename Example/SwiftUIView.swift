@@ -19,15 +19,18 @@ struct ContentView: View {
             }, label: {
                 Text("crop")
             })
-            Image(uiImage: cropped)
-                .resizable()
-                .scaledToFit()
-                .frame(width: 150, height: 150)
-                .border(Color.black, width: 1)
+            if let image = cropped {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 150, height: 150)
+                    .border(Color.black, width: 1)
+            }
+            
         }
         .sheet(isPresented: $ispresent, content: {
-            CropImageView(originImage: Image) { croppedImage in
-                self.cropped = croppedImage
+            CropImageView(originImage: image) { cropped in
+                self.cropped = cropped
             }
         })
         .padding()
