@@ -48,7 +48,7 @@ public struct CropImageView: View {
                 draggableRectangleLayer
                 controlsLayer(geometry: geometry)
             }
-            .alert("Alert", isPresented: $viewModel.isCompleteTask) {
+            .alert("Notify", isPresented: $viewModel.isCompleteTask) {
                 Button("Confirm", action: { dismiss() })
             } message: {
                 Text(viewModel.errorMessage.localizedDescription)
