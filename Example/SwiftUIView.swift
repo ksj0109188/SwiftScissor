@@ -6,13 +6,30 @@
 //
 
 import SwiftUI
+import SwiftScissor
 
-struct SwiftUIView: View {
+struct ContentView: View {
+    @State private var image = UIImage(named: "Sky")!
+    @State private var cropped: UIImage?
+    @State private var ispresent = false
     var body: some View {
-        Text(/*@START_MENU_TOKEN@*/"Hello, World!"/*@END_MENU_TOKEN@*/)
+        VStack {
+            Button(action: {
+                ispresent.toggle()
+            }, label: {
+                Text("crop")
+            })
+            Image(uiImage: cropped)
+                .resizable()
+                .scaledToFit()
+                .frame(width: 150, height: 150)
+                .border(Color.black, width: 1)
+        }
+        .sheet(isPresented: $ispresent, content: {
+            CropImageView(originImage: Image) { croppedImage in
+                self.cropped = croppedImage
+            }
+        })
+        .padding()
     }
-}
-
-#Preview {
-    SwiftUIView()
 }

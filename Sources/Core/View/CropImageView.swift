@@ -9,8 +9,8 @@ import SwiftUI
 
 @available(iOS 17.0, *)
 public struct CropImageView: View {
+    @Environment(\.dismiss) var dismiss
     @StateObject private var viewModel: CropViewModel = CropViewModel()
-    @Binding public var croppedImage: UIImage
     @State private var originImage: UIImage
     @State private var selectedAspectRatio: AspectRatio = .free
     @State private var maxSize: CGSize = .zero
@@ -19,10 +19,12 @@ public struct CropImageView: View {
     @State private var rectangleSize: CGSize = CGSize(width: 150, height: 150)
     @State private var rectangleinitialSize: CGSize = CGSize(width: 150, height: 150)
     
-    public init(originImage: UIImage, croppedImage: Binding<UIImage>) {
-        self.originImage = originImage
-        self._croppedImage = croppedImage
-    }
+    private let onCrop: (UIImage?) -> Void
+    
+    public init(originImage: UIImage, onCrop: @escaping (UIImage?) -> Void) {
+          self.originImage = originImage
+          self.onCrop = onCrop
+      }
     
     public var body: some View {
         GeometryReader { geometry in
@@ -33,7 +35,7 @@ public struct CropImageView: View {
                 controlsLayer(geometry: geometry)
             }
             .alert("Alert", isPresented: $viewModel.isCompleteTask) {
-                Button("Confirm", action: {})
+                Button("Confirm", action: { dismiss() })
             } message: {
                 Text(viewModel.errorMessage.localizedDescription)
             }
@@ -80,9 +82,9 @@ public struct CropImageView: View {
             NavigationCheckButton(color: .accentColor) {
                 Task {
                     if let image = await viewModel.captureAndCrop(image: originImage, geometry: geometry, offset: offset, rectangleSize: rectangleSize) {
-                        DispatchQueue.main.async {
-                            croppedImage = image
-                        }
+                        DispatchQueue.main.async { onCrop(image) }
+                    } else {
+                        onCrop(nil)
                     }
                 }
             }
