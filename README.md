@@ -3,7 +3,6 @@
 ![License](https://img.shields.io/badge/License-Apache%202.0-blue?style=flat-square)
 ![iOS](https://img.shields.io/badge/iOS-17.0%2B-blue?style=flat-square&logo=apple)
 ![Visitors](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2FYOURUSERNAME%2FYOURREPO&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=visitors&edge_flat=false)
-![GitHub](https://img.shields.io/github/downloads/ksj0109188/SwiftScissor/total?label=SPM%20installs)
 
 # Introduction
 An open-source library that provides an easy image cropping feature in a View format for SwiftUI without the need for UIKit connections.
