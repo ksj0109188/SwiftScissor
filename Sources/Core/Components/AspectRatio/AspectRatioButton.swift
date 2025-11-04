@@ -21,6 +21,7 @@ public enum AspectRatio: String, CaseIterable {
     }
 }
 
+@available(iOS 17.0, macOS 14.0, *)
 struct AspectRatioButtonGroup: View {
     @Binding var selectedRatio: AspectRatio
     var onRatioSelected: () -> Void
@@ -61,6 +62,7 @@ struct AspectRatioButtonGroup: View {
     }
 }
 
+@available(iOS 17.0, macOS 14.0, *)
 #Preview {
     AspectRatioButtonGroup(selectedRatio: .constant(.free)) {
     }

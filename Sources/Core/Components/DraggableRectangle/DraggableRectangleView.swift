@@ -7,11 +7,12 @@
 
 import SwiftUI
 
+@available(iOS 17.0, macOS 14.0, *)
 struct DraggableRectangleView: View {
     @Binding var offset: CGSize
     @Binding var initialOffset: CGSize
     @Binding var rectangleSize: CGSize
-    @Binding var rectangleinitialSize: CGSize
+    @Binding var rectangleInitialSize: CGSize
     @Binding var maxSize: CGSize
     @State private var isDragging = false
     
@@ -39,17 +40,15 @@ struct DraggableRectangleView: View {
     
     private var rectangleBorder: some View {
         Rectangle()
-            .strokeBorder(style: StrokeStyle(lineWidth: 1, dash: [5]))
-            .foregroundColor(.black)
+            .strokeBorder(lineWidth: CropConstants.photosBorderWidth)
+            .foregroundColor(.white)
             .frame(width: rectangleSize.width, height: rectangleSize.height)
             .offset(x: offset.width, y: offset.height)
     }
     
     private var cornerHandles: some View {
         ForEach(Corner.allCases, id: \.self) { corner in
-            Circle()
-                .frame(width: 12)
-                .foregroundColor(.black)
+            PhotosStyleCornerHandle(corner: mapToPhotosCorner(corner))
                 .offset(cornerPosition(for: corner.point, offset: offset))
                 .gesture(resizeGesture(for: corner.point))
         }
@@ -70,7 +69,7 @@ struct DraggableRectangleView: View {
             }
         }
         .offset(x: offset.width, y: offset.height)
-        .stroke(Color.white.opacity(0.7), lineWidth: 1)
+        .stroke(Color.white.opacity(CropConstants.gridLineOpacity), lineWidth: CropConstants.gridLineWidth)
     }
     
     private var dragGesture: some Gesture {
@@ -97,7 +96,7 @@ struct DraggableRectangleView: View {
                 isDragging = true
             }
             .onEnded { _ in
-                rectangleinitialSize = rectangleSize
+                rectangleInitialSize = rectangleSize
                 isDragging = false
             }
     }
@@ -125,8 +124,8 @@ struct DraggableRectangleView: View {
     }
     
     private func calculateNewSizeAndOffset(delta: CGSize, point: CGPoint) -> (CGSize, CGSize) {
-        let newWidth = min(max(50, rectangleinitialSize.width + delta.width), maxSize.width)
-        let newHeight = min(max(50, rectangleinitialSize.height + delta.height), maxSize.height)
+        let newWidth = min(max(CropConstants.minimumRectangleSize, rectangleInitialSize.width + delta.width), maxSize.width)
+        let newHeight = min(max(CropConstants.minimumRectangleSize, rectangleInitialSize.height + delta.height), maxSize.height)
         
         var newOffset = offset
         if point.x == 0 { newOffset.width += (rectangleSize.width - newWidth) / 2 }
@@ -136,10 +135,19 @@ struct DraggableRectangleView: View {
         
         return (CGSize(width: newWidth, height: newHeight), newOffset)
     }
-    
+
+    private func mapToPhotosCorner(_ corner: Corner) -> PhotosStyleCornerHandle.Corner {
+        switch corner {
+        case .topLeft: return .topLeft
+        case .topRight: return .topRight
+        case .bottomLeft: return .bottomLeft
+        case .bottomRight: return .bottomRight
+        }
+    }
+
     private enum Corner: CaseIterable {
         case topLeft, topRight, bottomLeft, bottomRight
-        
+
         var point: CGPoint {
             switch self {
                 case .topLeft: return CGPoint(x: 0, y: 0)
@@ -150,3 +158,98 @@ struct DraggableRectangleView: View {
         }
     }
 }
+
+// MARK: - Previews
+// Note: Previews temporarily commented out due to Preview macro limitations with struct declarations
+/*
+@available(iOS 17.0, macOS 14.0, *)
+#Preview("Default State") {
+    struct PreviewWrapper: View {
+        @State private var offset: CGSize = .zero
+        @State private var initialOffset: CGSize = .zero
+        @State private var rectangleSize: CGSize = CGSize(width: 200, height: 200)
+        @State private var rectangleInitialSize: CGSize = CGSize(width: 200, height: 200)
+        @State private var maxSize: CGSize = CGSize(width: 300, height: 400)
+
+        var body: some View {
+            ZStack {
+                Color.gray.opacity(0.3)
+                    .ignoresSafeArea()
+
+                DraggableRectangleView(
+                    offset: $offset,
+                    initialOffset: $initialOffset,
+                    rectangleSize: $rectangleSize,
+                    rectangleInitialSize: $rectangleInitialSize,
+                    maxSize: $maxSize
+                )
+            }
+        }
+    }
+
+    PreviewWrapper()
+}
+
+@available(iOS 17.0, macOS 14.0, *)
+#Preview("Square Crop") {
+    struct PreviewWrapper: View {
+        @State private var offset: CGSize = .zero
+        @State private var initialOffset: CGSize = .zero
+        @State private var rectangleSize: CGSize = CGSize(width: 250, height: 250)
+        @State private var rectangleInitialSize: CGSize = CGSize(width: 250, height: 250)
+        @State private var maxSize: CGSize = CGSize(width: 350, height: 350)
+
+        var body: some View {
+            ZStack {
+                LinearGradient(
+                    colors: [.blue, .purple],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                DraggableRectangleView(
+                    offset: $offset,
+                    initialOffset: $initialOffset,
+                    rectangleSize: $rectangleSize,
+                    rectangleInitialSize: $rectangleInitialSize,
+                    maxSize: $maxSize
+                )
+            }
+        }
+    }
+
+    PreviewWrapper()
+}
+
+@available(iOS 17.0, macOS 14.0, *)
+#Preview("Portrait Crop") {
+    struct PreviewWrapper: View {
+        @State private var offset: CGSize = CGSize(width: 0, height: 50)
+        @State private var initialOffset: CGSize = CGSize(width: 0, height: 50)
+        @State private var rectangleSize: CGSize = CGSize(width: 150, height: 450)
+        @State private var rectangleInitialSize: CGSize = CGSize(width: 150, height: 450)
+        @State private var maxSize: CGSize = CGSize(width: 350, height: 500)
+
+        var body: some View {
+            ZStack {
+                Image(systemName: "photo")
+                    .resizable()
+                    .scaledToFit()
+                    .foregroundColor(.gray.opacity(0.3))
+                    .frame(width: 350, height: 500)
+
+                DraggableRectangleView(
+                    offset: $offset,
+                    initialOffset: $initialOffset,
+                    rectangleSize: $rectangleSize,
+                    rectangleInitialSize: $rectangleInitialSize,
+                    maxSize: $maxSize
+                )
+            }
+        }
+    }
+
+    PreviewWrapper()
+}
+*/
