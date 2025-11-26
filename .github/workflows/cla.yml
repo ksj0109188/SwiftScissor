@@ -29,7 +29,7 @@ jobs:
           remote-organization-name: 'ksj0109188'
           remote-repository-name: 'swiftscissor-clas'
 
-          # Exempt bots and repository owner from signing the CLA
-          allowlist: '*[bot],ksj0109188'
+          # Exempt bots from signing the CLA (owner removed for testing)
+          allowlist: '*[bot]'
 
           custom-notsigned-prcomment: 'Thank you for your contribution! Please sign the [CLA](https://github.com/ksj0109188/SwiftScissor/blob/main/CLA.md) before we can merge your pull request. You can sign the CLA by just posting a comment following the below format.'
