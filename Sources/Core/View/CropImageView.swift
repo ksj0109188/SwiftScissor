@@ -17,14 +17,21 @@ import SwiftUI
 @available(iOS 17.0, *)
 public struct CropImageView: View {
     @Environment(\.dismiss) var dismiss
+    @Environment(\.accessibilityReduceTransparency) var reduceTransparency
     @StateObject private var viewModel: CropViewModel = CropViewModel()
     @State private var originImage: UIImage
     @State private var selectedAspectRatio: AspectRatio = .free
     @State private var maxSize: CGSize = .zero
     @State private var offset: CGSize = .zero
     @State private var initialOffset: CGSize = .zero
-    @State private var rectangleSize: CGSize = CGSize(width: 150, height: 150)
-    @State private var rectangleinitialSize: CGSize = CGSize(width: 150, height: 150)
+    @State private var rectangleSize: CGSize = CGSize(
+        width: CropConstants.defaultRectangleSize,
+        height: CropConstants.defaultRectangleSize
+    )
+    @State private var rectangleInitialSize: CGSize = CGSize(
+        width: CropConstants.defaultRectangleSize,
+        height: CropConstants.defaultRectangleSize
+    )
     
     private let onCrop: (UIImage?) -> Void
     
@@ -48,10 +55,14 @@ public struct CropImageView: View {
                 draggableRectangleLayer
                 controlsLayer(geometry: geometry)
             }
-            .alert("Notify", isPresented: $viewModel.isCompleteTask) {
-                Button("Confirm", action: { dismiss() })
+            .alert("Crop Result", isPresented: $viewModel.isCompleteTask) {
+                Button("OK", action: { dismiss() })
             } message: {
-                Text(viewModel.errorMessage.localizedDescription)
+                if let error = viewModel.errorMessage {
+                    Text(error.localizedDescription)
+                } else {
+                    Text("Image cropped successfully")
+                }
             }
             .onAppear { updateMaxSize(geometrySize: geometry.size) }
             .onChange(of: geometry.size) { _, newValue in
@@ -67,7 +78,7 @@ public struct CropImageView: View {
             offset: $offset,
             initialOffset: $initialOffset,
             rectangleSize: $rectangleSize,
-            rectangleinitialSize: $rectangleinitialSize,
+            rectangleInitialSize: $rectangleInitialSize,
             maxSize: $maxSize
         )
     }
@@ -93,13 +104,16 @@ public struct CropImageView: View {
             Spacer()
             Text("Crop").font(.subheadline)
             Spacer()
-            NavigationCheckButton(color: .accentColor) {
-                Task {
-                    if let image = await viewModel.captureAndCrop(image: originImage, geometry: geometry, offset: offset, rectangleSize: rectangleSize) {
-                        DispatchQueue.main.async { onCrop(image) }
-                    } else {
-                        onCrop(nil)
-                    }
+            NavigationCheckButton(color: .accentColor) { [weak viewModel, onCrop] in
+                guard let viewModel = viewModel else { return }
+                Task { @MainActor in
+                    let image = await viewModel.captureAndCrop(
+                        image: originImage,
+                        geometry: geometry,
+                        offset: offset,
+                        rectangleSize: rectangleSize
+                    )
+                    onCrop(image)
                 }
             }
         }
@@ -117,7 +131,7 @@ public struct CropImageView: View {
     }
     
     private func cropMaskLayer(geometry: GeometryProxy) -> some View {
-        Color.black.opacity(0.5)
+        Color.black.opacity(CropConstants.maskOpacity)
             .frame(width: maxSize.width, height: maxSize.height)
             .position(x: geometry.size.width / 2, y: geometry.size.height / 2)
             .mask(
@@ -141,13 +155,19 @@ public struct CropImageView: View {
     private func resetCropView() {
         offset = .zero
         initialOffset = .zero
-        rectangleSize = CGSize(width: 150, height: 150)
-        rectangleinitialSize = CGSize(width: 150, height: 150)
+        rectangleSize = CGSize(
+            width: CropConstants.defaultRectangleSize,
+            height: CropConstants.defaultRectangleSize
+        )
+        rectangleInitialSize = CGSize(
+            width: CropConstants.defaultRectangleSize,
+            height: CropConstants.defaultRectangleSize
+        )
     }
     
     private func updateRectangleSize(imageSize: CGSize) {
         rectangleSize = calculateNewSize(for: selectedAspectRatio, imageSize: imageSize)
-        rectangleinitialSize = rectangleSize
+        rectangleInitialSize = rectangleSize
         centerRectangle()
     }
     
@@ -169,6 +189,109 @@ public struct CropImageView: View {
         offset = .zero
         initialOffset = .zero
     }
-    
-    
 }
+
+// MARK: - Previews
+@available(iOS 17.0, *)
+#Preview("Light Mode") {
+    CropImageView(
+        originImage: PreviewHelper.createSampleImage(
+            width: 800,
+            height: 600,
+            colors: [.blue, .purple, .pink]
+        )
+    ) { croppedImage in
+        print("Cropped image: \(croppedImage?.size.debugDescription ?? "nil")")
+    }
+}
+
+@available(iOS 17.0, *)
+#Preview("Portrait Image") {
+    CropImageView(
+        originImage: PreviewHelper.createSampleImage(
+            width: 600,
+            height: 900,
+            colors: [.orange, .red, .yellow]
+        )
+    ) { croppedImage in
+        print("Cropped image: \(croppedImage?.size.debugDescription ?? "nil")")
+    }
+}
+
+@available(iOS 17.0, *)
+#Preview("Square Image") {
+    CropImageView(
+        originImage: PreviewHelper.createSampleImage(
+            width: 800,
+            height: 800,
+            colors: [.green, .teal, .cyan]
+        )
+    ) { croppedImage in
+        print("Cropped image: \(croppedImage?.size.debugDescription ?? "nil")")
+    }
+    .preferredColorScheme(.dark)
+}
+
+// MARK: - Preview Helper
+@available(iOS 17.0, *)
+private enum PreviewHelper {
+    static func createSampleImage(width: CGFloat, height: CGFloat, colors: [Color]) -> UIImage {
+        let size = CGSize(width: width, height: height)
+        let renderer = UIGraphicsImageRenderer(size: size)
+
+        return renderer.image { context in
+            // Create gradient background
+            let gradient = CGGradient(
+                colorsSpace: CGColorSpaceCreateDeviceRGB(),
+                colors: colors.map { UIColor($0).cgColor } as CFArray,
+                locations: nil
+            )!
+
+            context.cgContext.drawLinearGradient(
+                gradient,
+                start: .zero,
+                end: CGPoint(x: width, y: height),
+                options: []
+            )
+
+            // Add some geometric shapes for visual interest
+            UIColor.white.withAlphaComponent(0.3).setFill()
+
+            let circlePath = UIBezierPath(
+                arcCenter: CGPoint(x: width * 0.3, y: height * 0.3),
+                radius: min(width, height) * 0.15,
+                startAngle: 0,
+                endAngle: .pi * 2,
+                clockwise: true
+            )
+            circlePath.fill()
+
+            let rectPath = UIBezierPath(
+                rect: CGRect(
+                    x: width * 0.6,
+                    y: height * 0.6,
+                    width: width * 0.25,
+                    height: height * 0.25
+                )
+            )
+            rectPath.fill()
+
+            // Add text
+            let text = "SAMPLE"
+            let attributes: [NSAttributedString.Key: Any] = [
+                .font: UIFont.systemFont(ofSize: min(width, height) * 0.1, weight: .bold),
+                .foregroundColor: UIColor.white.withAlphaComponent(0.5)
+            ]
+
+            let textSize = text.size(withAttributes: attributes)
+            let textRect = CGRect(
+                x: (width - textSize.width) / 2,
+                y: (height - textSize.height) / 2,
+                width: textSize.width,
+                height: textSize.height
+            )
+            text.draw(in: textRect, withAttributes: attributes)
+        }
+    }
+}
+

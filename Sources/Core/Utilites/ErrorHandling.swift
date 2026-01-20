@@ -10,5 +10,5 @@ import Foundation
 @MainActor
 protocol ErrorHandling {
     var isCompleteTask: Bool { get set}
-    var errorMessage: LocalizedError { get set }
+    var errorMessage: CropError? { get set }
 }

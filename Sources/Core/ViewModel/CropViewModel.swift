@@ -9,9 +9,10 @@ import SwiftUI
 import CoreImage
 import Combine
 
+@available(iOS 17.0, macOS 14.0, *)
 final class CropViewModel: ObservableObject, ErrorHandling {
     @Published var isCompleteTask: Bool = false
-    @Published var errorMessage: LocalizedError = ErrorMessage.none
+    @Published var errorMessage: CropError?
     
     let captureManager: Captureable
     
@@ -22,7 +23,7 @@ final class CropViewModel: ObservableObject, ErrorHandling {
     func captureAndCrop(image: UIImage, geometry: GeometryProxy, offset: CGSize, rectangleSize: CGSize) async -> UIImage? {
         let newImage: UIImage?
         isCompleteTask = false
-        
+
         do {
             newImage = try await captureManager.captureAndCrop(
                 image: image,
@@ -30,29 +31,18 @@ final class CropViewModel: ObservableObject, ErrorHandling {
                 offset: offset,
                 rectangleSize: rectangleSize
             )
-            errorMessage = ErrorMessage.none
+            errorMessage = nil
+        } catch let error as CropError {
+            newImage = nil
+            errorMessage = error
         } catch {
             newImage = nil
-            errorMessage = ErrorMessage.captureFailed
+            errorMessage = .croppingFailure
         }
-        
+
         isCompleteTask = true
-        
+
         return newImage
-    }
-    
-    enum ErrorMessage: LocalizedError {
-        case none
-        case captureFailed
-        
-        var errorDescription: String? {
-            switch self {
-                case .none:
-                    return NSLocalizedString("Capture success", comment: "")
-                case .captureFailed:
-                    return NSLocalizedString("Capture fail", comment: "")
-            }
-        }
     }
 }
 
